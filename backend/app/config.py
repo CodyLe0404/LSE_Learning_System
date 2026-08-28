@@ -24,3 +24,11 @@ def get_database_config() -> dict[str, str]:
         "password": os.getenv("DB_PASSWORD", section.get("password", "")),
         "port": os.getenv("DB_PORT", section.get("port", "1433")),
     }
+
+def get_key_config() -> dict[str, str]:
+    config = _load_config()
+    section = config["KEY_PW"] if config.has_section("KEY_PW") else {}
+
+    return {
+        "key": os.getenv("", section.get("key", "LSELECTRIC"))
+    }
