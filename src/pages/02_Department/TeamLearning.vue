@@ -1,7 +1,7 @@
 <route>
 {
   meta: {
-    title: "Analytics Overview",
+    title: "Department Learning",
     icon: "pi pi-chart-bar"
   }
 }
@@ -10,7 +10,7 @@
 <template>
     <div>
         <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold">Analytics Overview</h1>
+            <h1 class="text-2xl font-bold mb-4">Department Learning is coming soon</h1>
             <Button label="Refresh" icon="pi pi-refresh" outlined @click="refreshStats" />
         </div>
 
@@ -29,7 +29,7 @@
 <script setup>
 import { Button } from 'primevue';
 import StatCard from '../../components/Analytics/StatCard.vue';
-import { useAnalytics } from '../../composables/Analytics/useAnalytics';
+import { useAnalytics } from '../../composables/Analytics/useAnalytics.js';
 
 const { stats, refreshStats } = useAnalytics();
 </script>

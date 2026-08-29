@@ -1,7 +1,7 @@
 <route>
 {
   meta: {
-    title: "User Profile",
+    title: "User Permission",
     icon: "pi pi-user"
   }
 }
@@ -9,7 +9,7 @@
 
 <template>
     <div class="max-w-xl">
-        <h1 class="text-2xl font-bold mb-6">User Profile</h1>
+        <h1 class="text-2xl font-bold mb-6">User Permission is coming soon</h1>
         
         <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-2">
