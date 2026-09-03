@@ -13,10 +13,12 @@
     >
 
         <div class="p-6 h-16 flex items-center justify-between border-b border-surface-200 dark:border-surface-700">
-            <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-indigo-500">
-                🎓LSE-Learning
+            <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-indigo-500 flex items-center gap-2">
+                <!-- Use i tag with PrimeIcons class -->
+                <i class="pi pi-graduation-cap text-primary-500 text-2xl"></i>
+                LSE-Learning
             </span>
-            <!-- Sidebar Toggle (Inside) - Always visible when Sidebar is Open -->
+
             <Button icon="pi pi-bars" text rounded @click="toggleSidebar" />
         </div>
         
