@@ -2,7 +2,7 @@
 {
   meta: {
     title: "Analysis Dashboard",
-    icon: "pi pi-beaker"
+    icon: "pi pi-chart-bar"
   }
 }
 </route>

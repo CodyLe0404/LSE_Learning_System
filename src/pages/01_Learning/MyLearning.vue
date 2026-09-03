@@ -2,7 +2,7 @@
 {
   meta: {
     title: "My Learning",
-    icon: "pi pi-home"
+    icon: "pi pi-address-book"
   }
 }
 </route>

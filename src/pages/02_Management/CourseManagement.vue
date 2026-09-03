@@ -2,7 +2,7 @@
 {
   meta: {
     title: "Course Management",
-    icon: "pi pi-beaker"
+    icon: "pi pi-cog"
   }
 }
 </route>

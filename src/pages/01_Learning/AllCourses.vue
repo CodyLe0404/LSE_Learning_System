@@ -2,7 +2,7 @@
 {
   meta: {
     title: "All Courses",
-    icon: "pi pi-home"
+    icon: "pi pi-book"
   }
 }
 </route>

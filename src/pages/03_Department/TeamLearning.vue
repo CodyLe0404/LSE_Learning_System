@@ -1,8 +1,8 @@
 <route>
 {
   meta: {
-    title: "Department Learning",
-    icon: "pi pi-chart-bar"
+    title: "Team Learning",
+    icon: "pi pi-users"
   }
 }
 </route>

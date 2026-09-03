@@ -2,7 +2,7 @@
 {
   meta: {
     title: "User Permission",
-    icon: "pi pi-user"
+    icon: "pi pi-user-edit"
   }
 }
 </route>
