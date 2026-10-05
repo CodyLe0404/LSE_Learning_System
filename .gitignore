@@ -161,3 +161,6 @@ __pycache__/
 
 #config file
 backend/config.ini
+
+#Note file
+backend/Note.txt
