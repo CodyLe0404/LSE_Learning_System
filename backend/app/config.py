@@ -25,6 +25,7 @@ def get_database_config() -> dict[str, str]:
         "port": os.getenv("DB_PORT", section.get("port", "1433")),
     }
 
+
 def get_key_config() -> dict[str, str]:
     config = _load_config()
     section = config["KEY_PW"] if config.has_section("KEY_PW") else {}
@@ -32,3 +33,11 @@ def get_key_config() -> dict[str, str]:
     return {
         "key": os.getenv("", section.get("key", "LSELECTRIC"))
     }
+
+
+def get_api_base_url() -> str:
+    config = _load_config()
+    section = config["API"] if config.has_section("API") else {}
+    return os.getenv("API_BASE_URL", section.get("link_access", "")).rstrip("/")
+
+
