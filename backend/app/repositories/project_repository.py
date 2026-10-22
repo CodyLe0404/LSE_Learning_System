@@ -20,21 +20,22 @@ class ProjectRepository:
     def check_login(self, user_id: str, password: str) -> dict[str, Any] | None:
         cursor = self.conn.cursor()
         try:
-            cursor.execute("EXEC DS_PM_Check_User_Login ?, ?", user_id, password)
+            cursor.execute("EXEC E_Learning.dbo.USP_LMS_Check_User_Login ?, ?", user_id, password)
             row = cursor.fetchone()
             if not row:
                 return None
-
-            cursor.execute("EXEC DS_PM_Get_Permission_Codes ?", row.permission_id)
-            get_per = cursor.fetchone()
+            
+            cursor.execute("EXEC E_Learning.dbo.USP_LMS_Get_Permission_Code ?", row.UserId)
+            get_per = cursor.fetchall()
             if not get_per:
                 return None
 
             return {
-                "userId": row.username,
-                "displayName": row.fullname,
-                "email": row.email,
-                "userConfig": get_per.permission_codes.split(";") if get_per.permission_codes else [],
+                "userId": row.UserId,
+                "employeeId": row.EmployeeCode,
+                "displayName": row.FullName,
+                "email": row.Email,
+                "userConfig": [item[0] for item in get_per],
             }
         finally:
             cursor.close()
@@ -42,7 +43,7 @@ class ProjectRepository:
     def change_user_password(self, user_id: str, current_pw: str, new_pw: str) -> tuple[int, str]:
         cursor = self.conn.cursor()
         try:
-            result = cursor.execute("EXEC USP_DS_PM_ChangeUserPassword ?, ?, ?", user_id, current_pw, new_pw)
+            result = cursor.execute("EXEC E_Learning.dbo.USP_LMS_Change_User_Password ?, ?, ?", user_id, current_pw, new_pw)
             row = result.fetchone()
             if row is None or len(row) < 2:
                 raise ValueError("Stored procedure did not return expected response.")
