@@ -37,7 +37,7 @@
                         {{ authStore.user?.displayName || 'User' }}
                     </p>
                     <p class="text-xs text-surface-500 dark:text-surface-400 truncate">
-                        ID: {{ authStore.user?.userId || 'N/A' }}
+                        ID: {{ authStore.user?.employeeId || 'N/A' }}
                     </p>
                 </div>
             </div>
