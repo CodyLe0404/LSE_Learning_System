@@ -94,7 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
             });
 
             if (!response.ok) {
-                throw new Error('Login failed');
+                throw new Error('Wrong User ID or Password');
             }
 
             const data = await response.json();
