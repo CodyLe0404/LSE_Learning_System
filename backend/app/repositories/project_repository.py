@@ -53,12 +53,21 @@ class ProjectRepository:
             cursor.close()
 
     def get_item_data_missing(self) -> list[dict[str, Any]]:
-            cursor = self.conn.cursor()
-            try:
-                cursor.execute("EXEC [Design_System].[dbo].[USP_PM_Get_Item_Missing_Data]")
-                columns = [col[0] for col in cursor.description]
-                return [dict(zip(columns, row)) for row in cursor.fetchall()]
-            finally:
-                cursor.close()
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("EXEC [Design_System].[dbo].[USP_PM_Get_Item_Missing_Data]")
+            columns = [col[0] for col in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+        finally:
+            cursor.close()
 
-    
+    def get_data_common(self, condition: str) -> list[dict[str, Any]]:
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("EXEC [E_Learning].[dbo].[USP_LMS_Get_Common_Data] ?", condition)
+            columns = [col[0] for col in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+        finally:
+            cursor.close()
+
+

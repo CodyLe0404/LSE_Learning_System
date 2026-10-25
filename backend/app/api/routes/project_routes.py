@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.api.dependencies import get_project_service
 from app.core.exceptions import ServiceError
-from app.models.schemas import ChangePasswordRequest, LoginRequest
+from app.models.schemas import ChangePasswordRequest, LoginRequest, CommonCondition
 from app.services.project_service import ProjectService
 
 router = APIRouter()
@@ -41,5 +41,10 @@ def change_user_password(request: ChangePasswordRequest, service: ProjectService
 @router.get("/dashboard/itemmissing")
 def get_item_missing_assignee(service: ProjectService = Depends(get_project_service)) -> list:
     return service.get_item_missing_data()
+
+
+@router.post("/lms/commondata")
+def get_item_missing_assignee(payload: CommonCondition, service: ProjectService = Depends(get_project_service)) -> list:
+    return service.get_common_data(payload)
 
 

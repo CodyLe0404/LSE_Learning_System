@@ -35,3 +35,10 @@ class BaseResponse(BaseModel):
     success: bool
     message: str
     data: Any | None = None
+
+
+class CommonCondition(BaseModel):
+    userId: str
+    condition: str
+
+

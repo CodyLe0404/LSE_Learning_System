@@ -7,7 +7,7 @@ from app.core.exceptions import ServiceError
 from app.core.middleware import log_daily
 from app.repositories.project_repository import ProjectRepository
 from app.utils.security import decrypt_password, encrypt_password
-
+from app.services.User_Permission.user_permission_builder import UserPermissionBuilder
 
 class ProjectService:
     def __init__(self, repository: ProjectRepository) -> None:
@@ -40,5 +40,16 @@ class ProjectService:
     def get_item_missing_data(self)-> list[dict[str, Any]]:
             raw_data = self.repository.get_item_data_missing()
             return raw_data
+        
+    def get_common_data(self, payload: Any)-> list[dict[str, Any]]:
+        if payload.condition == 'Permission_Access':
+            raw_data = self.repository.get_data_common(payload.condition)
+            builder = UserPermissionBuilder()
+            data_built = builder.build_user_permissions(raw_data)
+            return data_built
+            
+        else:
+            raw_data = self.repository.get_data_common(payload.condition)
+        return raw_data
     
     
