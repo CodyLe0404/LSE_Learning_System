@@ -1,5 +1,5 @@
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://10.13.227.2:9000";
+const API_BASE = import.meta.env.VITE_API_BASE;// || "http://10.13.227.253:8000";
 
 export async function changeUserPassword({ userId, currentPassword, newPassword }) {
   const response = await fetch(
@@ -19,13 +19,20 @@ export async function changeUserPassword({ userId, currentPassword, newPassword 
   return await response.json()
 }
 
-export async function getItemMissingData(userId) {
-  const response = await fetch(`${API_BASE}/dashboard/itemmissing?userId=${userId}`)
+export async function getCommonData(payload) {
+  const response = await fetch(
+    `${API_BASE}/lms/commondata`,
+    {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    }
+  )
 
   if (!response.ok) {
     const text = await response.text()
     throw new Error(
-      `Failed to load Dashboard summary data: ${response.status} ${text}`
+      `Failed to load data: ${response.status} ${text}`
     )
   }
 
