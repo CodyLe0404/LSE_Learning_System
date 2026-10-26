@@ -2,7 +2,8 @@
 {
   meta: {
     title: "User Permission",
-    icon: "pi pi-shield"
+    icon: "pi pi-shield",
+    permission: ['HR_LMS_UA'],
   }
 }
 </route>
@@ -13,7 +14,7 @@
     <div class="fixed top-20 right-6 z-50 flex flex-col gap-2 pointer-events-none">
       <TransitionGroup name="toast">
         <div 
-          v-for="toast in toasts" 
+          v-for="toast in toasts"
           :key="toast.id"
           class="pointer-events-auto p-4 rounded-xl shadow-2xl flex items-center gap-3 min-w-[300px] max-w-md border backdrop-blur-md transition-all duration-300"
           :class="{
@@ -194,7 +195,15 @@
 
           <!-- Scrollable User Cards List -->
           <div class="max-h-[420px] overflow-y-auto divide-y divide-surface-100 dark:divide-surface-700/50 p-1">
+            <div v-if="isLoading" class="p-8 text-center text-surface-400">
+              <i class="pi pi-spin pi-spinner text-xl mb-2 block"></i>
+              <p class="text-xs font-medium">Loading users...</p>
+            </div>
+            <div v-else-if="errorMessage" class="p-4 text-center text-red-500">
+              <p class="text-xs font-medium">{{ errorMessage }}</p>
+            </div>
             <div 
+              v-else
               v-for="u in filteredUsers" 
               :key="u.userId"
               @click="switchUser(u.userId)"
@@ -255,7 +264,7 @@
             </div>
 
             <!-- Empty User List State -->
-            <div v-if="filteredUsers.length === 0" class="p-8 text-center text-surface-400">
+            <div v-if="!isLoading && !errorMessage && filteredUsers.length === 0" class="p-8 text-center text-surface-400">
               <i class="pi pi-user-times text-2xl mb-2 opacity-50 block"></i>
               <p class="text-xs font-medium">No users match your filter criteria.</p>
             </div>
@@ -788,13 +797,14 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { Button, Checkbox, Select, Dialog } from 'primevue';
 import Tooltip from 'primevue/tooltip';
 import { useAuthStore } from '../stores/auth';
+import { getCommonData } from '../services/projectService';
 
 // Register Tooltip directive
 const vTooltip = Tooltip;
 const authStore = useAuthStore();
 
 // ============================================================================
-// 1. MOCK DATA & REPOSITORIES (Ready to substitute with API Client Service)
+// 1. PERMISSION CATALOG & REPOSITORIES
 // ============================================================================
 
 /**
@@ -1128,8 +1138,10 @@ const permissionCategories = [
 // 2. COMPONENT REACTIVE STATE
 // ============================================================================
 
-const users = ref(JSON.parse(JSON.stringify(initialMockUsers)));
-const selectedUserId = ref('dev');
+const users = ref([]);
+const isLoading = ref(false);
+const errorMessage = ref('');
+const selectedUserId = ref('');
 const selectedPermissions = ref([]);
 const originalPermissions = ref([]);
 
@@ -1531,16 +1543,47 @@ function copyRawJsonText() {
   });
 }
 
-// Initial lifecycle setup
-onMounted(() => {
-  // If user is logged in, select them by default if present in list
-  if (authStore.user?.userId) {
-    const found = users.value.find(u => u.userId === authStore.user.userId);
-    if (found) {
-      selectedUserId.value = authStore.user.userId;
-    }
+// Load users when the permission management page is mounted.
+onMounted(async () => {
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  try {
+    const allUsers = await getCommonData({
+      userId: authStore.user.displayName,
+      condition: 'Permission_Access'
+    });
+
+    users.value = allUsers.map(user => ({
+      id: user.userId,
+      userId: user.userName || '',
+      displayName: user.fullName || '',
+      email: user.email || '',
+      employeeId: user.employeeCode || '',
+      department: user.departmentName ?? user.department ?? '',
+      roleTitle: user.roleName || '',
+      status: 'active',
+      userConfig: Array.isArray(user.userConfig) ? user.userConfig : []
+    }));
+
+    const permissionData = await getCommonData({
+      userId: authStore.user.displayName,
+      condition: 'All_permission'
+    });
+    console.log('permissionData', permissionData)
+    const currentUserId = authStore.user.userId;
+    selectedUserId.value = users.value.some(user => user.userId === currentUserId)
+      ? currentUserId
+      : (users.value[0]?.userId || '');
+    loadUserPermissions(selectedUserId.value);
+  } catch (error) {
+    console.error('Failed to load users:', error);
+    errorMessage.value = error instanceof Error
+      ? error.message
+      : 'Failed to load users. Please try again.';
+  } finally {
+    isLoading.value = false;
   }
-  loadUserPermissions(selectedUserId.value);
 });
 </script>
 
