@@ -47,7 +47,13 @@ class ProjectService:
             builder = UserPermissionBuilder()
             data_built = builder.build_user_permissions(raw_data)
             return data_built
-            
+        
+        elif payload.condition == 'All_permission':
+            raw_data = self.repository.get_data_common(payload.condition)
+            builder = UserPermissionBuilder()
+            data_built = builder.build_permissions_list(raw_data)
+            return data_built  
+          
         else:
             raw_data = self.repository.get_data_common(payload.condition)
         return raw_data
