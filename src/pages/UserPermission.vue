@@ -81,19 +81,19 @@
           </div>
           <div class="px-4 py-3 bg-surface-50 dark:bg-surface-750/50 rounded-xl border border-surface-200/60 dark:border-surface-700/60">
             <span class="text-[10px] font-semibold text-surface-400 uppercase tracking-wider block">Available Codes</span>
-            <span class="text-xl font-black text-primary-600 dark:text-primary-400">{{ permissionsCatalog.length }}</span>
+            <span class="text-xl font-black text-primary-600 dark:text-primary-400">{{ catalogPermission.length }}</span>
           </div>
           <div class="px-4 py-3 bg-surface-50 dark:bg-surface-750/50 rounded-xl border border-surface-200/60 dark:border-surface-700/60">
             <span class="text-[10px] font-semibold text-surface-400 uppercase tracking-wider block">Active User</span>
             <span class="text-xl font-black text-emerald-600 dark:text-emerald-400 truncate block max-w-[140px]">
-              {{ selectedUser?.displayName.split(' ')[0] || 'None' }}
+              {{ selectedUser?.displayName.split(' ').at(-1) || 'None' }}
             </span>
           </div>
           <div class="px-4 py-3 bg-surface-50 dark:bg-surface-750/50 rounded-xl border border-surface-200/60 dark:border-surface-700/60">
             <span class="text-[10px] font-semibold text-surface-400 uppercase tracking-wider block">Assigned Codes</span>
             <span class="text-xl font-black text-indigo-600 dark:text-indigo-400">
               {{ selectedPermissions.length }}
-              <span class="text-xs font-normal text-surface-400">/{{ permissionsCatalog.length }}</span>
+              <span class="text-xs font-normal text-surface-400">/{{ catalogPermission.length }}</span>
             </span>
           </div>
         </div>
@@ -311,14 +311,14 @@
               <span class="text-[9px] uppercase tracking-wider text-surface-400 font-semibold block">Employee ID</span>
               <span class="font-mono text-surface-800 dark:text-surface-200 font-bold text-[11px]">{{ selectedUser.employeeId }}</span>
             </div>
-            <div class="p-2 bg-surface-50 dark:bg-surface-750 rounded-lg">
+            <!-- <div class="p-2 bg-surface-50 dark:bg-surface-750 rounded-lg">
               <span class="text-[9px] uppercase tracking-wider text-surface-400 font-semibold block">Security Level</span>
               <span class="text-surface-800 dark:text-surface-200 font-bold text-[11px]">{{ getUserClearance(selectedPermissions) }}</span>
-            </div>
+            </div> -->
           </div>
 
           <!-- Copy JSON / Sync Session Utility -->
-          <div class="flex gap-2 pt-1">
+          <!-- <div class="flex gap-2 pt-1">
             <Button 
               label="Copy Codes (JSON)" 
               icon="pi pi-copy" 
@@ -339,7 +339,7 @@
               @click="syncCurrentSession" 
               v-tooltip.top="'Apply granted privileges immediately to your active session'"
             />
-          </div>
+          </div> -->
         </div>
 
       </div>
@@ -363,7 +363,7 @@
 
           <div class="flex flex-wrap gap-2">
             <button 
-              v-for="preset in rolePresets" 
+              v-for="preset in presetRole" 
               :key="preset.id"
               @click="applyRolePreset(preset)"
               class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 flex items-center gap-1.5 cursor-pointer hover:scale-102 active:scale-98"
@@ -386,7 +386,7 @@
               <input 
                 v-model="permissionSearchQuery" 
                 type="text" 
-                placeholder="Search permission by code, name, or description (e.g. LEARN, SYS_USER)..." 
+                placeholder="Search permission by code, name, or description (e.g. Read Courses, Edit Courses)..." 
                 class="w-full pl-9 pr-8 py-2 text-xs bg-surface-50 dark:bg-surface-750 border border-surface-200 dark:border-surface-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-surface-400 text-surface-800 dark:text-surface-100"
               />
               <button 
@@ -405,7 +405,7 @@
                 :class="scopeFilter === 'all' ? 'bg-surface-0 dark:bg-surface-700 text-primary-500 shadow-xs' : 'text-surface-500 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-100'"
                 @click="scopeFilter = 'all'"
               >
-                All ({{ permissionsCatalog.length }})
+                All ({{ catalogPermission.length }})
               </button>
               <button 
                 class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all border-none bg-transparent cursor-pointer"
@@ -419,14 +419,14 @@
                 :class="scopeFilter === 'unassigned' ? 'bg-surface-0 dark:bg-surface-700 text-amber-600 dark:text-amber-400 shadow-xs' : 'text-surface-500 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-100'"
                 @click="scopeFilter = 'unassigned'"
               >
-                Available ({{ permissionsCatalog.length - selectedPermissions.length }})
+                Available ({{ catalogPermission.length - selectedPermissions.length }})
               </button>
             </div>
           </div>
 
           <!-- Category Pill Badges -->
           <div class="flex items-center justify-between gap-2 pt-1 border-t border-surface-100 dark:border-surface-700/60 overflow-x-auto scrollbar-none">
-            <div class="flex items-center gap-1.5 shrink-0">
+            <!-- <div class="flex items-center gap-1.5 shrink-0">
               <button 
                 @click="categoryFilter = 'All'"
                 class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer"
@@ -434,7 +434,7 @@
                   ? 'bg-surface-900 dark:bg-surface-0 text-surface-0 dark:text-surface-900 border-surface-900 dark:border-surface-0 shadow-xs' 
                   : 'bg-surface-50 dark:bg-surface-750 text-surface-600 dark:text-surface-300 border-surface-200/60 dark:border-surface-700/60 hover:bg-surface-100 dark:hover:bg-surface-700'"
               >
-                All Modules
+                All Permission Role
               </button>
               <button 
                 v-for="cat in permissionCategories" 
@@ -449,7 +449,7 @@
                 <span>{{ cat.name }}</span>
                 <span class="text-[9px] font-mono opacity-80">({{ getCategoryCount(cat.name) }})</span>
               </button>
-            </div>
+            </div> -->
 
             <!-- Global Select All / Clear All Filtered -->
             <div class="flex items-center gap-1.5 shrink-0">
@@ -472,111 +472,85 @@
               />
             </div>
           </div>
-
         </div>
 
         <!-- Permissions List / Grouped by Category -->
         <div class="space-y-4">
-          <div 
-            v-for="group in filteredPermissionGroups" 
-            :key="group.category"
-            class="bg-surface-0 dark:bg-surface-800 rounded-2xl border border-surface-200/80 dark:border-surface-700/80 shadow-sm overflow-hidden"
-          >
-            <!-- Category Group Header -->
-            <div class="px-5 py-3.5 bg-surface-50/80 dark:bg-surface-850/80 border-b border-surface-200/60 dark:border-surface-700/60 flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs" :class="group.badgeColor">
-                  <i :class="group.icon"></i>
-                </div>
-                <div>
-                  <h3 class="text-xs font-extrabold text-surface-900 dark:text-surface-0 uppercase tracking-wider m-0">
-                    {{ group.category }}
-                  </h3>
-                  <p class="text-[10px] text-surface-400 m-0">
-                    {{ group.permissions.filter(p => selectedPermissions.includes(p.code)).length }} of {{ group.permissions.length }} privileges granted
-                  </p>
-                </div>
-              </div>
-
-              <!-- Category quick action -->
-              <div class="flex items-center gap-2">
-                <button 
-                  @click="toggleCategoryPermissions(group.permissions)"
-                  class="text-[11px] font-bold text-primary-600 dark:text-primary-400 hover:underline bg-transparent border-none cursor-pointer"
-                >
-                  {{ isCategoryFullySelected(group.permissions) ? 'Deselect Category' : 'Select All In Category' }}
-                </button>
-              </div>
-            </div>
-
+          <!-- Khung lớn chứa tất cả permission items chung một frame -->
+          <div class="bg-surface-0 dark:bg-surface-800 rounded-2xl border border-surface-200/80 dark:border-surface-700/80 shadow-sm overflow-hidden p-4">
+            
             <!-- Permission Items Matrix Grid -->
-            <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div 
-                v-for="perm in group.permissions" 
-                :key="perm.code"
-                @click="togglePermission(perm.code)"
-                class="p-3.5 rounded-xl border transition-all duration-200 cursor-pointer relative flex items-start gap-3 select-none group"
-                :class="[
-                  selectedPermissions.includes(perm.code)
-                    ? 'bg-primary-50/40 dark:bg-primary-950/20 border-primary-400/60 dark:border-primary-700/60 shadow-xs'
-                    : 'bg-surface-0 dark:bg-surface-800 border-surface-200/60 dark:border-surface-700/60 hover:border-surface-300 dark:hover:border-surface-600 hover:bg-surface-50/50 dark:hover:bg-surface-750/30'
-                ]"
-              >
-                <!-- Checkbox -->
-                <div class="pt-0.5 shrink-0" @click.stop>
-                  <Checkbox 
-                    :modelValue="selectedPermissions.includes(perm.code)" 
-                    :binary="true"
-                    :inputId="perm.code"
-                    @update:modelValue="() => togglePermission(perm.code)"
-                  />
-                </div>
-
-                <!-- Info Block -->
-                <div class="flex-1 min-w-0 space-y-1">
-                  <div class="flex items-center justify-between gap-2">
-                    <label :for="perm.code" class="text-xs font-bold text-surface-900 dark:text-surface-0 cursor-pointer group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                      {{ perm.name }}
-                    </label>
-
-                    <!-- Level Badge -->
-                    <span 
-                      class="px-2 py-0.5 text-[9px] font-extrabold uppercase rounded-full shrink-0"
-                      :class="getBadgeStyleForLevel(perm.level)"
-                    >
-                      {{ perm.level }}
-                    </span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              
+              <!-- Lặp qua từng nhóm, rồi lặp qua từng permission (hoặc nếu mảng của bạn là một danh sách phẳng, hãy dùng v-for trực tiếp trên mảng permissions) -->
+              <!-- Trường hợp group.permissions chứa tất cả item cần hiển thị chung một khung: -->
+              <template v-for="group in filteredPermissionGroups" :key="group.category">
+                <div 
+                  v-for="perm in group.permissions" 
+                  :key="perm.code"
+                  @click="togglePermission(perm.code)"
+                  class="p-3.5 rounded-xl border transition-all duration-200 cursor-pointer relative flex items-start gap-3 select-none group"
+                  :class="[
+                    selectedPermissions.includes(perm.code)
+                      ? 'bg-primary-50/40 dark:bg-primary-950/20 border-primary-400/60 dark:border-primary-700/60 shadow-xs'
+                      : 'bg-surface-0 dark:bg-surface-800 border-surface-200/60 dark:border-surface-700/60 hover:border-surface-300 dark:hover:border-surface-600 hover:bg-surface-50/50 dark:hover:bg-surface-750/30'
+                  ]"
+                >
+                  <!-- Checkbox -->
+                  <div class="pt-0.5 shrink-0" @click.stop>
+                    <Checkbox 
+                      :modelValue="selectedPermissions.includes(perm.code)" 
+                      :binary="true"
+                      :inputId="perm.code"
+                      @update:modelValue="() => togglePermission(perm.code)"
+                    />
                   </div>
 
-                  <!-- Code Badge -->
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="font-mono text-[10px] font-semibold text-primary-700 dark:text-primary-300 bg-primary-100/70 dark:bg-primary-900/40 px-1.5 py-0.5 rounded border border-primary-200/50 dark:border-primary-800/30">
-                      {{ perm.code }}
-                    </span>
+                  <!-- Info Block -->
+                  <div class="flex-1 min-w-0 space-y-1">
+                    <div class="flex items-center justify-between gap-2">
+                      <label :for="perm.code" class="text-xs font-bold text-surface-900 dark:text-surface-0 cursor-pointer group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                        {{ perm.name }}
+                      </label>
 
-                    <!-- Diff State Indicators -->
-                    <span 
-                      v-if="isNewlyAdded(perm.code)" 
-                      class="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/70 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"
-                    >
-                      <i class="pi pi-plus text-[7px]"></i> Added
-                    </span>
-                    <span 
-                      v-else-if="isNewlyRemoved(perm.code)" 
-                      class="text-[9px] font-extrabold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/70 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"
-                    >
-                      <i class="pi pi-minus text-[7px]"></i> Revoked
-                    </span>
+                      <!-- Level Badge -->
+                      <!-- <span 
+                        class="px-2 py-0.5 text-[9px] font-extrabold uppercase rounded-full shrink-0"
+                        :class="getBadgeStyleForLevel(perm.level)"
+                      >
+                        {{ perm.level }}
+                      </span> -->
+                    </div>
+
+                    <!-- Code Badge -->
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-mono text-[10px] font-semibold text-primary-700 dark:text-primary-300 bg-primary-100/70 dark:bg-primary-900/40 px-1.5 py-0.5 rounded border border-primary-200/50 dark:border-primary-800/30">
+                        {{ perm.code }}
+                      </span>
+
+                      <!-- Diff State Indicators -->
+                      <span 
+                        v-if="isNewlyAdded(perm.code)" 
+                        class="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/70 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"
+                      >
+                        <i class="pi pi-plus text-[7px]"></i> Added
+                      </span>
+                      <span 
+                        v-else-if="isNewlyRemoved(perm.code)" 
+                        class="text-[9px] font-extrabold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/70 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"
+                      >
+                        <i class="pi pi-minus text-[7px]"></i> Revoked
+                      </span>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="text-[11px] text-surface-500 dark:text-surface-400 leading-normal pt-0.5 m-0">
+                      {{ perm.description }}
+                    </p>
                   </div>
-
-                  <!-- Description -->
-                  <p class="text-[11px] text-surface-500 dark:text-surface-400 leading-normal pt-0.5 m-0">
-                    {{ perm.description }}
-                  </p>
                 </div>
-              </div>
+              </template>
             </div>
-
           </div>
 
           <!-- Empty Permissions Search Result -->
@@ -1127,11 +1101,11 @@ const rolePresets = [
 
 // Permission Categories Metadata
 const permissionCategories = [
-  { name: 'Learning & Courses', icon: 'pi pi-graduation-cap' },
-  { name: 'Department & Teams', icon: 'pi pi-users' },
-  { name: 'Analytics & Performance', icon: 'pi pi-chart-line' },
-  { name: 'System Administration', icon: 'pi pi-cog' },
-  { name: 'Content & Media Operations', icon: 'pi pi-cloud-upload' }
+  { name: 'Admin', icon: 'pi pi-graduation-cap' },
+  { name: 'HR', icon: 'pi pi-users' },
+  { name: 'Manager', icon: 'pi pi-chart-line' },
+  { name: 'Trainer', icon: 'pi pi-cog' },
+  { name: 'Employee', icon: 'pi pi-cloud-upload' }
 ];
 
 // ============================================================================
@@ -1139,6 +1113,8 @@ const permissionCategories = [
 // ============================================================================
 
 const users = ref([]);
+const presetRole = ref([]);
+const catalogPermission = ref([])
 const isLoading = ref(false);
 const errorMessage = ref('');
 const selectedUserId = ref('');
@@ -1230,22 +1206,22 @@ const removedCodesCount = computed(() => {
 
 // Grouped permissions with search & filters applied
 const filteredPermissionGroups = computed(() => {
-  let perms = permissionsCatalog;
+  const permissionCatalog = catalogPermission.value;
+  if (!Array.isArray(permissionCatalog)) {
+    throw new TypeError('Permission catalog state must be an array.');
+  }
+  let perms = permissionCatalog;
 
   // 1. Search Query Filter
   if (permissionSearchQuery.value.trim()) {
     const q = permissionSearchQuery.value.toLowerCase().trim();
-    perms = perms.filter(p => 
-      p.code.toLowerCase().includes(q) ||
-      p.name.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
-    );
+    perms = perms.filter(p => [p.code, p.name, p.description, p.category]
+      .some(value => String(value ?? '').toLowerCase().includes(q)));
   }
 
   // 2. Category Tab Filter
   if (categoryFilter.value !== 'All') {
-    perms = perms.filter(p => p.category === categoryFilter.value);
+    perms = perms.filter(p => String(p.category ?? '') === categoryFilter.value);
   }
 
   // 3. Scope Filter
@@ -1258,15 +1234,16 @@ const filteredPermissionGroups = computed(() => {
   // Group by category
   const grouped = {};
   perms.forEach(p => {
-    if (!grouped[p.category]) {
-      grouped[p.category] = [];
+    const category = p.category ?? 'Uncategorized';
+    if (!grouped[category]) {
+      grouped[category] = [];
     }
-    grouped[p.category].push(p);
+    grouped[category].push(p);
   });
 
   return Object.keys(grouped).map(catName => ({
     category: catName,
-    icon: getCategoryIcon(catName),
+    // icon: getCategoryIcon(catName),
     badgeColor: getCategoryBadgeColor(catName),
     permissions: grouped[catName]
   }));
@@ -1274,7 +1251,7 @@ const filteredPermissionGroups = computed(() => {
 
 // Helper for Category Count
 function getCategoryCount(catName) {
-  return permissionsCatalog.filter(p => p.category === catName).length;
+  return catalogPermission.value.filter(p => p.category === catName).length;
 }
 
 function getCategoryIcon(catName) {
@@ -1318,6 +1295,7 @@ function getUserInitials(name) {
 }
 
 function getUserClearance(perms) {
+  console.log('perms', perms)
   if (perms.includes('admin') || perms.includes('SYS_PERMISSION_GRANT')) return 'Super Administrator';
   if (perms.some(p => p.startsWith('SYS_'))) return 'System Admin';
   if (perms.some(p => p.startsWith('DEPT_'))) return 'Department Lead';
@@ -1570,11 +1548,28 @@ onMounted(async () => {
       userId: authStore.user.displayName,
       condition: 'All_permission'
     });
-    console.log('permissionData', permissionData)
+    
+    if (!permissionData || !Array.isArray(permissionData.permissionsCatalog)) {
+      throw new TypeError('Invalid All_permission response: expected permissionsCatalog to be an array.');
+    }
+
+    const invalidPermissionIndex = permissionData.permissionsCatalog.findIndex(permission =>
+      permission === null || typeof permission !== 'object' || Array.isArray(permission)
+    );
+    if (invalidPermissionIndex !== -1) {
+      throw new TypeError(`Invalid All_permission response: permissionsCatalog[${invalidPermissionIndex}] must be an object.`);
+    }
+
+    presetRole.value = permissionData.rolePresets
+    catalogPermission.value = permissionData.permissionsCatalog
+
+    console.log('permissionData', presetRole)
+    console.log('catalogPermission', catalogPermission)
+
+
     const currentUserId = authStore.user.userId;
-    selectedUserId.value = users.value.some(user => user.userId === currentUserId)
-      ? currentUserId
-      : (users.value[0]?.userId || '');
+    selectedUserId.value = users.value.some(user => user.userId === currentUserId) ? currentUserId : (users.value[0]?.userId || '');
+
     loadUserPermissions(selectedUserId.value);
   } catch (error) {
     console.error('Failed to load users:', error);
