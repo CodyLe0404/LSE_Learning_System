@@ -40,4 +40,42 @@ class UserPermissionBuilder:
 
         return list(users_map.values())
 
+    def build_permissions_list(self, raw_data: list[dict]) -> dict:
+        roles_dict = {}
+        permissions_dict = {}
 
+        for row in raw_data:
+            role_id = row.get("RoleId")
+            role_name = row.get("RoleName")
+            perm_code = row.get("PermissionCode")
+            perm_name = row.get("PermissionName")
+            perm_desc = row.get("PermissionDesc")
+
+            # 1. Group permission codes by role
+            role_key = (role_id, role_name)
+            if role_key not in roles_dict:
+                roles_dict[role_key] = []
+            if perm_code and perm_code not in roles_dict[role_key]:
+                roles_dict[role_key].append(perm_code)
+
+            # 2. Build deduplicated permissions catalog
+            if perm_code and perm_code not in permissions_dict:
+                permissions_dict[perm_code] = {
+                    "code": perm_code,
+                    "name": perm_name,
+                    "description": perm_desc,
+                    "category": role_name,  # Assigns the role name as category, adjust if needed
+                    "level": role_id,  # Default level, adjust if your data provides it
+                }
+
+        # Format rolePresets
+        role_presets = [
+            {"roleId": r_id, "label": r_name, "codes": codes}
+            for (r_id, r_name), codes in roles_dict.items()
+        ]
+
+        # Format permissionsCatalog
+        permissions_catalog = list(permissions_dict.values())
+
+        return {"rolePresets": role_presets, "permissionsCatalog": permissions_catalog}
+    
