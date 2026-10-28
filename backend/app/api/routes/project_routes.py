@@ -44,7 +44,7 @@ def get_item_missing_assignee(service: ProjectService = Depends(get_project_serv
 
 
 @router.post("/lms/commondata")
-def get_item_missing_assignee(payload: CommonCondition, service: ProjectService = Depends(get_project_service)) -> list:
+def get_item_missing_assignee(payload: CommonCondition, service: ProjectService = Depends(get_project_service)):
     return service.get_common_data(payload)
 
 
