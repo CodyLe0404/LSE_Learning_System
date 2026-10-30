@@ -311,35 +311,7 @@
               <span class="text-[9px] uppercase tracking-wider text-surface-400 font-semibold block">Employee ID</span>
               <span class="font-mono text-surface-800 dark:text-surface-200 font-bold text-[11px]">{{ selectedUser.employeeId }}</span>
             </div>
-            <!-- <div class="p-2 bg-surface-50 dark:bg-surface-750 rounded-lg">
-              <span class="text-[9px] uppercase tracking-wider text-surface-400 font-semibold block">Security Level</span>
-              <span class="text-surface-800 dark:text-surface-200 font-bold text-[11px]">{{ getUserClearance(selectedPermissions) }}</span>
-            </div> -->
           </div>
-
-          <!-- Copy JSON / Sync Session Utility -->
-          <!-- <div class="flex gap-2 pt-1">
-            <Button 
-              label="Copy Codes (JSON)" 
-              icon="pi pi-copy" 
-              size="small" 
-              outlined 
-              severity="secondary" 
-              class="w-full text-[11px]" 
-              @click="copyUserPermissionsJson" 
-            />
-            <Button 
-              v-if="isCurrentSessionUser"
-              label="Sync My Session" 
-              icon="pi pi-refresh" 
-              size="small" 
-              outlined 
-              severity="primary" 
-              class="shrink-0 text-[11px]" 
-              @click="syncCurrentSession" 
-              v-tooltip.top="'Apply granted privileges immediately to your active session'"
-            />
-          </div> -->
         </div>
 
       </div>
@@ -426,31 +398,6 @@
 
           <!-- Category Pill Badges -->
           <div class="flex items-center justify-between gap-2 pt-1 border-t border-surface-100 dark:border-surface-700/60 overflow-x-auto scrollbar-none">
-            <!-- <div class="flex items-center gap-1.5 shrink-0">
-              <button 
-                @click="categoryFilter = 'All'"
-                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer"
-                :class="categoryFilter === 'All' 
-                  ? 'bg-surface-900 dark:bg-surface-0 text-surface-0 dark:text-surface-900 border-surface-900 dark:border-surface-0 shadow-xs' 
-                  : 'bg-surface-50 dark:bg-surface-750 text-surface-600 dark:text-surface-300 border-surface-200/60 dark:border-surface-700/60 hover:bg-surface-100 dark:hover:bg-surface-700'"
-              >
-                All Permission Role
-              </button>
-              <button 
-                v-for="cat in permissionCategories" 
-                :key="cat.name"
-                @click="categoryFilter = cat.name"
-                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border cursor-pointer flex items-center gap-1.5"
-                :class="categoryFilter === cat.name 
-                  ? 'bg-primary-500 text-white border-primary-500 shadow-xs' 
-                  : 'bg-surface-50 dark:bg-surface-750 text-surface-600 dark:text-surface-300 border-surface-200/60 dark:border-surface-700/60 hover:bg-surface-100 dark:hover:bg-surface-700'"
-              >
-                <i :class="cat.icon" class="text-[10px]"></i>
-                <span>{{ cat.name }}</span>
-                <span class="text-[9px] font-mono opacity-80">({{ getCategoryCount(cat.name) }})</span>
-              </button>
-            </div> -->
-
             <!-- Global Select All / Clear All Filtered -->
             <div class="flex items-center gap-1.5 shrink-0">
               <Button 
@@ -483,7 +430,6 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               
               <!-- Lặp qua từng nhóm, rồi lặp qua từng permission (hoặc nếu mảng của bạn là một danh sách phẳng, hãy dùng v-for trực tiếp trên mảng permissions) -->
-              <!-- Trường hợp group.permissions chứa tất cả item cần hiển thị chung một khung: -->
               <template v-for="group in filteredPermissionGroups" :key="group.category">
                 <div 
                   v-for="perm in group.permissions" 
@@ -512,14 +458,6 @@
                       <label :for="perm.code" class="text-xs font-bold text-surface-900 dark:text-surface-0 cursor-pointer group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                         {{ perm.name }}
                       </label>
-
-                      <!-- Level Badge -->
-                      <!-- <span 
-                        class="px-2 py-0.5 text-[9px] font-extrabold uppercase rounded-full shrink-0"
-                        :class="getBadgeStyleForLevel(perm.level)"
-                      >
-                        {{ perm.level }}
-                      </span> -->
                     </div>
 
                     <!-- Code Badge -->
@@ -769,344 +707,11 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { Button, Checkbox, Select, Dialog } from 'primevue';
-import Tooltip from 'primevue/tooltip';
 import { useAuthStore } from '../stores/auth';
 import { getCommonData } from '../services/projectService';
 
-// Register Tooltip directive
-const vTooltip = Tooltip;
+
 const authStore = useAuthStore();
-
-// ============================================================================
-// 1. PERMISSION CATALOG & REPOSITORIES
-// ============================================================================
-
-/**
- * Mock Users Repository:
- * Represents system users with their active permission configurations (`userConfig`).
- */
-const initialMockUsers = [
-  {
-    id: 1,
-    userId: 'dev',
-    displayName: 'Developer Admin',
-    email: 'dev@company.com',
-    employeeId: 'EMP-001',
-    department: 'IT & Engineering',
-    roleTitle: 'Principal Platform Engineer',
-    status: 'active',
-    userConfig: ['admin', 'EXAMPLE_OTHER_PERMISSION', 'SYS_USER_MANAGE', 'SYS_PERMISSION_GRANT', 'SYS_AUDIT_LOG_VIEW']
-  },
-  {
-    id: 2,
-    userId: 'sophia.carter',
-    displayName: 'Sophia Carter',
-    email: 'sophia.carter@company.com',
-    employeeId: 'EMP-1024',
-    department: 'Human Resources',
-    roleTitle: 'HR & L&D Director',
-    status: 'active',
-    userConfig: [
-      'LEARN_VIEW',
-      'LEARN_ENROLL',
-      'LEARN_ASSIGN_MANDATORY',
-      'DEPT_TRACK_PROGRESS',
-      'DEPT_APPROVE_REQUESTS',
-      'DEPT_EXPORT_REPORTS',
-      'ANALYTICS_VIEW_DASHBOARD'
-    ]
-  },
-  {
-    id: 3,
-    userId: 'marcus.vance',
-    displayName: 'Marcus Vance',
-    email: 'marcus.vance@company.com',
-    employeeId: 'EMP-2048',
-    department: 'Engineering',
-    roleTitle: 'Technical Training Lead',
-    status: 'active',
-    userConfig: [
-      'LEARN_VIEW',
-      'LEARN_ENROLL',
-      'LEARN_COURSE_CREATE',
-      'LEARN_COURSE_EDIT',
-      'CONTENT_UPLOAD_MEDIA'
-    ]
-  },
-  {
-    id: 4,
-    userId: 'elena.rostova',
-    displayName: 'Elena Rostova',
-    email: 'elena.rostova@company.com',
-    employeeId: 'EMP-3012',
-    department: 'Operations',
-    roleTitle: 'Operations Manager',
-    status: 'active',
-    userConfig: [
-      'LEARN_VIEW',
-      'LEARN_ENROLL',
-      'DEPT_VIEW_MEMBERS',
-      'DEPT_TRACK_PROGRESS',
-      'DEPT_APPROVE_REQUESTS',
-      'ANALYTICS_VIEW_DASHBOARD'
-    ]
-  },
-  {
-    id: 5,
-    userId: 'liam.chen',
-    displayName: 'Liam Chen',
-    email: 'liam.chen@company.com',
-    employeeId: 'EMP-4096',
-    department: 'Marketing',
-    roleTitle: 'Product Marketing Associate',
-    status: 'active',
-    userConfig: [
-      'LEARN_VIEW',
-      'LEARN_ENROLL'
-    ]
-  },
-  {
-    id: 6,
-    userId: 'aisha.patel',
-    displayName: 'Aisha Patel',
-    email: 'aisha.patel@company.com',
-    employeeId: 'EMP-5120',
-    department: 'Compliance & Legal',
-    roleTitle: 'Senior Governance Auditor',
-    status: 'active',
-    userConfig: [
-      'LEARN_VIEW',
-      'SYS_AUDIT_LOG_VIEW',
-      'ANALYTICS_VIEW_DASHBOARD',
-      'ANALYTICS_EXPORT_METRICS',
-      'DEPT_EXPORT_REPORTS'
-    ]
-  },
-  {
-    id: 7,
-    userId: 'test',
-    displayName: 'Test Learner User',
-    email: 'test@company.com',
-    employeeId: 'EMP-9999',
-    department: 'Quality Assurance',
-    roleTitle: 'QA Intern',
-    status: 'active',
-    userConfig: []
-  }
-];
-
-/**
- * Mock Permission Codes Catalog:
- * Structured taxonomy of privileges across functional modules in LSE-Learning.
- */
-const permissionsCatalog = [
-  // Learning & Courses
-  {
-    code: 'LEARN_VIEW',
-    name: 'View Course Catalog',
-    description: 'Allows browsing courseware, syllabus details, and general learning materials.',
-    category: 'Learning & Courses',
-    level: 'Basic'
-  },
-  {
-    code: 'LEARN_ENROLL',
-    name: 'Self-Enroll Courses',
-    description: 'Enables self-service enrollment in elective and open company courses.',
-    category: 'Learning & Courses',
-    level: 'Basic'
-  },
-  {
-    code: 'LEARN_ASSIGN_MANDATORY',
-    name: 'Assign Mandatory Courses',
-    description: 'Permits assigning compulsory training deadlines to individuals or teams.',
-    category: 'Learning & Courses',
-    level: 'Elevated'
-  },
-  {
-    code: 'LEARN_COURSE_CREATE',
-    name: 'Create & Publish Courses',
-    description: 'Author new training courses, quizzes, and learning milestone pathways.',
-    category: 'Learning & Courses',
-    level: 'Elevated'
-  },
-  {
-    code: 'LEARN_COURSE_EDIT',
-    name: 'Modify Course Content',
-    description: 'Edit existing curriculum, lesson plans, questions, and passing thresholds.',
-    category: 'Learning & Courses',
-    level: 'Elevated'
-  },
-  {
-    code: 'LEARN_CERTIFICATE_ISSUE',
-    name: 'Issue Certificates',
-    description: 'Generate, sign, and validate digital credentials and training diplomas.',
-    category: 'Learning & Courses',
-    level: 'Standard'
-  },
-
-  // Department & Teams
-  {
-    code: 'DEPT_VIEW_MEMBERS',
-    name: 'View Department Directory',
-    description: 'Browse staff records, organizational charts, and team rosters.',
-    category: 'Department & Teams',
-    level: 'Basic'
-  },
-  {
-    code: 'DEPT_TRACK_PROGRESS',
-    name: 'Track Team Progress',
-    description: 'Monitor learning hours, streak counts, and test scores of team members.',
-    category: 'Department & Teams',
-    level: 'Elevated'
-  },
-  {
-    code: 'DEPT_APPROVE_REQUESTS',
-    name: 'Approve Training Requests',
-    description: 'Review and approve employee requests for external certifications & budget.',
-    category: 'Department & Teams',
-    level: 'Elevated'
-  },
-  {
-    code: 'DEPT_EXPORT_REPORTS',
-    name: 'Export Team Compliance',
-    description: 'Download team training audits, CSV completion rosters, and compliance reports.',
-    category: 'Department & Teams',
-    level: 'Elevated'
-  },
-
-  // Analytics & Performance
-  {
-    code: 'ANALYTICS_VIEW_DASHBOARD',
-    name: 'Access Analytics Dashboard',
-    description: 'View macro KPIs, completion rates, and learning trend visual charts.',
-    category: 'Analytics & Performance',
-    level: 'Elevated'
-  },
-  {
-    code: 'ANALYTICS_EXPORT_METRICS',
-    name: 'Export BI Raw Datasets',
-    description: 'Export raw analytical logs, score distributions, and time-series records.',
-    category: 'Analytics & Performance',
-    level: 'Elevated'
-  },
-  {
-    code: 'ANALYTICS_CUSTOM_REPORTS',
-    name: 'Build Custom BI Reports',
-    description: 'Configure custom SQL/pivot aggregations and scheduled executive emails.',
-    category: 'Analytics & Performance',
-    level: 'Admin'
-  },
-
-  // System Administration
-  {
-    code: 'admin',
-    name: 'Super Admin Access',
-    description: 'Unrestricted master privileges across all platform services and security flags.',
-    category: 'System Administration',
-    level: 'Critical'
-  },
-  {
-    code: 'SYS_USER_MANAGE',
-    name: 'User Account Management',
-    description: 'Create, update, lock, or deactivate corporate user accounts and profiles.',
-    category: 'System Administration',
-    level: 'Critical'
-  },
-  {
-    code: 'SYS_PERMISSION_GRANT',
-    name: 'Grant Privileges & RBAC',
-    description: 'Assign or revoke security permission codes and maintain role policies.',
-    category: 'System Administration',
-    level: 'Critical'
-  },
-  {
-    code: 'SYS_AUDIT_LOG_VIEW',
-    name: 'Inspect Security Audit Logs',
-    description: 'Review authentication records, privilege change timestamps, and system logs.',
-    category: 'System Administration',
-    level: 'Admin'
-  },
-  {
-    code: 'SYS_SYSTEM_SETTINGS',
-    name: 'Platform Global Settings',
-    description: 'Manage LDAP connection strings, SMTP mailers, and system integrations.',
-    category: 'System Administration',
-    level: 'Critical'
-  },
-
-  // Content & Media Operations
-  {
-    code: 'CONTENT_UPLOAD_MEDIA',
-    name: 'Upload Courseware & Media',
-    description: 'Upload video lectures, PDF guides, SCORM packages, and slide decks.',
-    category: 'Content & Media Operations',
-    level: 'Standard'
-  },
-  {
-    code: 'CONTENT_DELETE_MEDIA',
-    name: 'Delete Cloud Media Assets',
-    description: 'Permanently remove archived video lessons and heavy courseware files.',
-    category: 'Content & Media Operations',
-    level: 'Admin'
-  },
-  {
-    code: 'EXAMPLE_OTHER_PERMISSION',
-    name: 'Legacy Service Connector',
-    description: 'Special connector permission for internal EnCo middleware integrations.',
-    category: 'Content & Media Operations',
-    level: 'Standard'
-  }
-];
-
-/**
- * Fast Role Preset Packages:
- */
-const rolePresets = [
-  {
-    id: 'learner',
-    label: 'Standard Learner',
-    icon: 'pi pi-user',
-    buttonStyle: 'bg-surface-100 hover:bg-surface-200 text-surface-800 dark:bg-surface-700 dark:hover:bg-surface-650 dark:text-surface-100 border-surface-300 dark:border-surface-600',
-    codes: ['LEARN_VIEW', 'LEARN_ENROLL']
-  },
-  {
-    id: 'trainer',
-    label: 'Course Instructor',
-    icon: 'pi pi-book',
-    buttonStyle: 'bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:hover:bg-blue-900/60 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-    codes: ['LEARN_VIEW', 'LEARN_ENROLL', 'LEARN_COURSE_CREATE', 'LEARN_COURSE_EDIT', 'LEARN_CERTIFICATE_ISSUE', 'CONTENT_UPLOAD_MEDIA']
-  },
-  {
-    id: 'manager',
-    label: 'Department Lead',
-    icon: 'pi pi-briefcase',
-    buttonStyle: 'bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:hover:bg-purple-900/60 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-    codes: ['LEARN_VIEW', 'LEARN_ENROLL', 'LEARN_ASSIGN_MANDATORY', 'DEPT_VIEW_MEMBERS', 'DEPT_TRACK_PROGRESS', 'DEPT_APPROVE_REQUESTS', 'DEPT_EXPORT_REPORTS', 'ANALYTICS_VIEW_DASHBOARD']
-  },
-  {
-    id: 'auditor',
-    label: 'Governance Auditor',
-    icon: 'pi pi-file-check',
-    buttonStyle: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-    codes: ['LEARN_VIEW', 'SYS_AUDIT_LOG_VIEW', 'ANALYTICS_VIEW_DASHBOARD', 'ANALYTICS_EXPORT_METRICS', 'DEPT_EXPORT_REPORTS']
-  },
-  {
-    id: 'admin',
-    label: 'System Admin',
-    icon: 'pi pi-shield',
-    buttonStyle: 'bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 dark:text-rose-300 border-rose-200 dark:border-rose-800',
-    codes: permissionsCatalog.map(p => p.code)
-  }
-];
-
-// Permission Categories Metadata
-const permissionCategories = [
-  { name: 'Admin', icon: 'pi pi-graduation-cap' },
-  { name: 'HR', icon: 'pi pi-users' },
-  { name: 'Manager', icon: 'pi pi-chart-line' },
-  { name: 'Trainer', icon: 'pi pi-cog' },
-  { name: 'Employee', icon: 'pi pi-cloud-upload' }
-];
 
 // ============================================================================
 // 2. COMPONENT REACTIVE STATE
@@ -1249,16 +854,6 @@ const filteredPermissionGroups = computed(() => {
   }));
 });
 
-// Helper for Category Count
-function getCategoryCount(catName) {
-  return catalogPermission.value.filter(p => p.category === catName).length;
-}
-
-function getCategoryIcon(catName) {
-  const match = permissionCategories.find(c => c.name === catName);
-  return match ? match.icon : 'pi pi-tag';
-}
-
 function getCategoryBadgeColor(catName) {
   switch (catName) {
     case 'Learning & Courses':
@@ -1292,16 +887,6 @@ function getBadgeStyleForLevel(level) {
 function getUserInitials(name) {
   if (!name) return 'U';
   return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-}
-
-function getUserClearance(perms) {
-  console.log('perms', perms)
-  if (perms.includes('admin') || perms.includes('SYS_PERMISSION_GRANT')) return 'Super Administrator';
-  if (perms.some(p => p.startsWith('SYS_'))) return 'System Admin';
-  if (perms.some(p => p.startsWith('DEPT_'))) return 'Department Lead';
-  if (perms.some(p => p.startsWith('LEARN_COURSE_'))) return 'Course Trainer';
-  if (perms.length > 0) return 'Standard Learner';
-  return 'Restricted User';
 }
 
 function isNewlyAdded(code) {
@@ -1363,24 +948,6 @@ function removePermissionCode(code) {
   }
 }
 
-function isCategoryFullySelected(categoryPermissions) {
-  return categoryPermissions.every(p => selectedPermissions.value.includes(p.code));
-}
-
-function toggleCategoryPermissions(categoryPermissions) {
-  const allSelected = isCategoryFullySelected(categoryPermissions);
-  if (allSelected) {
-    const codesToRemove = new Set(categoryPermissions.map(p => p.code));
-    selectedPermissions.value = selectedPermissions.value.filter(c => !codesToRemove.has(c));
-    showToast(`Deselected all permissions in module`, 'Batch Action', 'info');
-  } else {
-    const currentSet = new Set(selectedPermissions.value);
-    categoryPermissions.forEach(p => currentSet.add(p.code));
-    selectedPermissions.value = Array.from(currentSet);
-    showToast(`Granted all permissions in module`, 'Batch Action', 'success');
-  }
-}
-
 function selectAllVisible() {
   const visibleCodes = [];
   filteredPermissionGroups.value.forEach(g => {
@@ -1434,16 +1001,6 @@ function resetPermissionFilters() {
 // ============================================================================
 
 function handleSavePermissions() {
-  // Check if sensitive privileges (admin, SYS_USER_MANAGE, SYS_PERMISSION_GRANT) are involved
-  const sensitiveCodes = ['admin', 'SYS_USER_MANAGE', 'SYS_PERMISSION_GRANT', 'SYS_SYSTEM_SETTINGS'];
-  const hasSensitiveChange = sensitiveCodes.some(
-    code => isNewlyAdded(code) || isNewlyRemoved(code)
-  );
-
-  if (hasSensitiveChange) {
-    confirmDialogVisible.value = true;
-    return;
-  }
 
   executeSaveProcess();
 }
@@ -1464,9 +1021,12 @@ async function executeSaveProcess() {
     if (userToUpdate) {
       userToUpdate.userConfig = [...selectedPermissions.value];
     }
-
+    console.log('originalPermissions', originalPermissions)
     // Update baseline
     originalPermissions.value = [...selectedPermissions.value];
+    
+    console.log('selectedPermissions', selectedPermissions)
+    console.log('isCurrentSessionUser', isCurrentSessionUser)
 
     // If currently logged in user is being modified, update authStore directly
     if (isCurrentSessionUser.value && authStore.user) {
@@ -1494,19 +1054,6 @@ async function executeSaveProcess() {
   } finally {
     isSaving.value = false;
   }
-}
-
-// Sync Current Active User Session
-function syncCurrentSession() {
-  if (authStore.user) {
-    authStore.user.userConfig = [...selectedPermissions.value];
-    showToast('Your active session permissions have been updated in real-time!', 'Session Synchronized', 'success');
-  }
-}
-
-// Copy utilities
-function copyUserPermissionsJson() {
-  jsonDialogVisible.value = true;
 }
 
 function copyRawJsonText() {
