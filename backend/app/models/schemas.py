@@ -42,3 +42,9 @@ class CommonCondition(BaseModel):
     condition: str
 
 
+class PermissionUpdateRequest(BaseModel):
+    userId: int | str
+    added: list[str]
+    removed: list[str]
+    updatedBy: str
+
