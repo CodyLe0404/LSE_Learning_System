@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.api.dependencies import get_project_service
 from app.core.exceptions import ServiceError
-from app.models.schemas import ChangePasswordRequest, LoginRequest, CommonCondition
+from app.models.schemas import ChangePasswordRequest, LoginRequest, CommonCondition, PermissionUpdateRequest
 from app.services.project_service import ProjectService
 
 router = APIRouter()
@@ -48,3 +48,6 @@ def get_item_missing_assignee(payload: CommonCondition, service: ProjectService 
     return service.get_common_data(payload)
 
 
+@router.post("/permission/grantaccess")
+def update_user_permission_code(payload: PermissionUpdateRequest, service: ProjectService = Depends(get_project_service)):
+    return service.update_user_permission(payload.model_dump())
