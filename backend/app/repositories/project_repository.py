@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict
 import pyodbc
+import json
 
 
 class ProjectRepository:
@@ -70,4 +71,42 @@ class ProjectRepository:
         finally:
             cursor.close()
 
-
+    def update_user_permissions_code(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        cursor = self.conn.cursor()
+        try:
+            user_id = payload.get("userId")
+            added_list = payload.get("added", [])
+            removed_list = payload.get("removed", [])
+            updated_by = payload.get("updatedBy", '')
+            
+            added_json = json.dumps(added_list)
+            removed_json = json.dumps(removed_list)
+            
+            cursor.execute(
+                "EXEC [E_Learning].[dbo].[USP_LMS_Update_User_Permission] @UserId = ?, @AddedJson = ?, @RemovedJson = ?, @UpdatedBy = ?",
+                (user_id, added_json, removed_json, updated_by)
+            )
+            
+            # Lấy kết quả trả về từ câu lệnh SELECT cuối cùng của Store Procedure
+            row = cursor.fetchone()
+            self.conn.commit()
+            
+            if row:
+                # Tuỳ vào thư viện DB (pyodbc, pymssql,...), row có thể là tuple hoặc row object
+                # Giả sử pyodbc trả về tuple hoặc hỗ trợ truy cập dạng cột
+                is_success = row[0] if isinstance(row, tuple) else row.IsSuccess
+                message = row[1] if isinstance(row, tuple) else row.Message
+                
+                return {
+                    "success": bool(is_success),
+                    "message": message
+                }
+            
+            return {"success": True, "message": "Cập nhật thành công"}
+            
+        except Exception as e:
+            self.conn.rollback()
+            # Trả về kết quả lỗi dạng dictionary thay vì raise exception ngầm làm sập app (hoặc tùy cấu trúc team bạn)
+            return {"success": False, "message": str(e)}
+        finally:
+            cursor.close()

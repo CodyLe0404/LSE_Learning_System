@@ -58,4 +58,8 @@ class ProjectService:
             raw_data = self.repository.get_data_common(payload.condition)
         return raw_data
     
+    def update_user_permission(self, payload: dict):
+        result_data = self.repository.update_user_permissions_code(payload)
+        return result_data
+    
     
