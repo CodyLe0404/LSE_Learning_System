@@ -708,13 +708,13 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { Button, Checkbox, Select, Dialog } from 'primevue';
 import { useAuthStore } from '../stores/auth';
-import { getCommonData } from '../services/projectService';
+import { getCommonData, updateUserPermission } from '../services/projectService';
 
 
 const authStore = useAuthStore();
 
 // ============================================================================
-// 2. COMPONENT REACTIVE STATE
+// COMPONENT REACTIVE STATE
 // ============================================================================
 
 const users = ref([]);
@@ -754,17 +754,12 @@ function removeToast(id) {
 }
 
 // ============================================================================
-// 3. COMPUTED PROPERTIES
+// COMPUTED PROPERTIES
 // ============================================================================
 
 // Currently selected user object
 const selectedUser = computed(() => {
   return users.value.find(u => u.userId === selectedUserId.value) || users.value[0];
-});
-
-// Check if selected user is the one currently logged in
-const isCurrentSessionUser = computed(() => {
-  return authStore.user?.userId === selectedUserId.value;
 });
 
 // Departments list
@@ -903,7 +898,7 @@ function userHasPendingModifications(userId) {
 }
 
 // ============================================================================
-// 4. INTERACTION METHODS
+// INTERACTION METHODS
 // ============================================================================
 
 function switchUser(newUserId) {
@@ -996,8 +991,20 @@ function resetPermissionFilters() {
   scopeFilter.value = 'all';
 }
 
+const getPermissionsChanges = (userId, userConfig, baseline) => {
+  const currentSet = new Set(userConfig);
+  const originalSet = new Set(baseline);
+
+  return {
+    userId,
+    added: [...currentSet].filter(permission => !originalSet.has(permission)),
+    removed: [...originalSet].filter(permission => !currentSet.has(permission)),
+    updatedBy: authStore.user.employeeId
+  };
+};
+
 // ============================================================================
-// 5. SAVE / GRANT API INTEGRATION LOGIC
+// SAVE / GRANT API INTEGRATION LOGIC
 // ============================================================================
 
 function handleSavePermissions() {
@@ -1005,49 +1012,58 @@ function handleSavePermissions() {
   executeSaveProcess();
 }
 
-/**
- * Simulated Async API Request to persist user permissions
- */
 async function executeSaveProcess() {
   isSaving.value = true;
   confirmDialogVisible.value = false;
 
   try {
-    // Simulate network delay (e.g., calling backend API endpoint)
-    await new Promise(resolve => setTimeout(resolve, 650));
-
-    // Update local user state
-    const userToUpdate = users.value.find(u => u.userId === selectedUserId.value);
-    if (userToUpdate) {
-      userToUpdate.userConfig = [...selectedPermissions.value];
+    const userIdAtSave = selectedUserId.value;
+    const userToUpdate = users.value.find(u => u.userId === userIdAtSave);
+    if (!userToUpdate) {
+      throw new Error('The selected user could not be found.');
     }
-    console.log('originalPermissions', originalPermissions)
-    // Update baseline
-    originalPermissions.value = [...selectedPermissions.value];
-    
-    console.log('selectedPermissions', selectedPermissions)
-    console.log('isCurrentSessionUser', isCurrentSessionUser)
-
-    // If currently logged in user is being modified, update authStore directly
-    if (isCurrentSessionUser.value && authStore.user) {
-      authStore.user.userConfig = [...selectedPermissions.value];
-      // Sync back to local storage
-      try {
-        localStorage.setItem('user_data_last_sync', Date.now().toString());
-      } catch (e) {
-        console.warn(e);
-      }
-    }
-
-    showToast(
-      `Successfully granted ${selectedPermissions.value.length} permission codes to ${selectedUser.value?.displayName}.`,
-      'Permissions Updated Successfully',
-      'success'
+    const permissionsToSave = [...selectedPermissions.value];
+    const permissionChanges = getPermissionsChanges(
+      userToUpdate.id,
+      permissionsToSave,
+      originalPermissions.value
     );
+
+    const grantAccessResult = await updateUserPermission(permissionChanges);
+
+    if (grantAccessResult && grantAccessResult.success) {
+      userToUpdate.userConfig = permissionsToSave;
+      if (selectedUserId.value === userIdAtSave) {
+        originalPermissions.value = [...permissionsToSave];
+      }
+
+      // Nếu currently logged in user bị thay đổi, update authStore trực tiếp
+      if (userIdAtSave === authStore.user?.userId && authStore.user) {
+        authStore.user.userConfig = [...permissionsToSave];
+        try {
+          localStorage.setItem('user_data_last_sync', Date.now().toString());
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+
+      showToast(
+        grantAccessResult.message || `Successfully updated permissions for ${userToUpdate.displayName}.`,
+        'Permissions Updated Successfully',
+        'success'
+      );
+    } else {
+      // Xử lý trường hợp Server báo không thành công
+      showToast(
+        grantAccessResult?.message || 'Failed to update permissions in database.',
+        'Save Failed',
+        'error'
+      );
+    }
   } catch (error) {
     console.error('Failed to save permissions:', error);
     showToast(
-      'An unexpected error occurred while saving permissions. Please retry.',
+      error.message || 'An unexpected error occurred while saving permissions. Please retry.',
       'Save Failed',
       'error'
     );
@@ -1110,13 +1126,9 @@ onMounted(async () => {
     presetRole.value = permissionData.rolePresets
     catalogPermission.value = permissionData.permissionsCatalog
 
-    console.log('permissionData', presetRole)
-    console.log('catalogPermission', catalogPermission)
-
-
     const currentUserId = authStore.user.userId;
-    selectedUserId.value = users.value.some(user => user.userId === currentUserId) ? currentUserId : (users.value[0]?.userId || '');
 
+    selectedUserId.value = users.value.some(user => user.userId === currentUserId) ? currentUserId : (users.value[0]?.userId || '');
     loadUserPermissions(selectedUserId.value);
   } catch (error) {
     console.error('Failed to load users:', error);
